@@ -1,15 +1,15 @@
-const User = require("../models/user");
+import User, { IUser } from "../models/user";
 
 class UserRepository {
-    async findByEmail(email) {
+    async findByEmail(email: string): Promise<IUser | null> {
         return await User.findOne({ email: email.toLowerCase() });
     }
 
-    async findByNick(nick) {
+    async findByNick(nick: string): Promise<IUser | null> {
         return await User.findOne({ nick: nick.toLowerCase() });
     }
 
-    async findByCriteria(criteria) {
+    async findByCriteria(criteria: { email: string; nick: string }): Promise<IUser[]> {
         return await User.find({
             $or: [
                 { email: criteria.email.toLowerCase() },
@@ -18,10 +18,10 @@ class UserRepository {
         });
     }
 
-    async create(userData) {
+    async create(userData: Partial<IUser>): Promise<IUser> {
         const user = new User(userData);
         return await user.save();
     }
 }
 
-module.exports = new UserRepository();
+export default new UserRepository();

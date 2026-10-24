@@ -1,23 +1,25 @@
-const reservationService = require("../services/reservation.service");
-const { sendSuccess } = require("../utils/response");
+import { Request, Response, NextFunction } from "express";
+import reservationService from "../services/reservation.service";
+import { sendSuccess } from "../utils/response";
+import AppError from "../utils/AppError";
 
 class ReservationController {
-    async create(req, res, next) {
+    async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { publication_id, item_id } = req.body;
-            const donorId = req.user.id;
+            const donorId = req.user!.id;
 
             const reservation = await reservationService.createReservation(donorId, publication_id, item_id);
-            return sendSuccess(res, reservation, 201);
+            sendSuccess(res, reservation, 201);
         } catch (error) {
             next(error);
         }
     }
 
-    async list(req, res, next) {
+    async list(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
 
             const options = {
                 page,
@@ -25,9 +27,9 @@ class ReservationController {
                 sort: { reserved_at: -1 }
             };
 
-            const result = await reservationService.listUserReservations(req.user.id, options);
+            const result = await reservationService.listUserReservations(req.user!.id, options);
 
-            return sendSuccess(res, result.docs, 200, {
+            sendSuccess(res, result.docs, 200, {
                 page: result.page,
                 limit: result.limit,
                 total: result.totalDocs,
@@ -38,26 +40,26 @@ class ReservationController {
         }
     }
 
-    async getById(req, res, next) {
+    async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const reservation = await reservationService.getReservationById(req.params.id);
-            return sendSuccess(res, reservation, 200);
+            sendSuccess(res, reservation, 200);
         } catch (error) {
             next(error);
         }
     }
 
-    async updateStatus(req, res, next) {
+    async updateStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { status } = req.body;
-            const userId = req.user.id;
+            const userId = req.user!.id;
 
             if (status === "cancelada") {
                 const result = await reservationService.cancelReservation(req.params.id, userId);
-                return sendSuccess(res, result, 200);
+                sendSuccess(res, result, 200);
             } else if (status === "entregado") {
                 const result = await reservationService.confirmDelivery(req.params.id, userId);
-                return sendSuccess(res, result, 200);
+                sendSuccess(res, result, 200);
             } else {
                 throw new AppError("BAD_REQUEST", 400, "Estado de reserva no válido");
             }
@@ -67,4 +69,4 @@ class ReservationController {
     }
 }
 
-module.exports = new ReservationController();
+export default new ReservationController();

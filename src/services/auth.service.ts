@@ -1,10 +1,21 @@
-const userRepository = require("../repositories/user.repository");
-const bcrypt = require("bcrypt");
-const jwtService = require("./jwt");
-const AppError = require("../utils/AppError");
+import userRepository from "../repositories/user.repository";
+import bcrypt from "bcrypt";
+import * as jwtService from "../services/jwt";
+import AppError from "../utils/AppError";
+import { Role } from "../types/domain";
+
+interface AuthLoginResponse {
+    user: {
+        id: string;
+        name: string;
+        nick: string;
+        role: Role;
+    };
+    token: string;
+}
 
 class AuthService {
-    async register(userData) {
+    async register(userData: any): Promise<any> {
         // Control de duplicados
         const existingUser = await userRepository.findByCriteria({
             email: userData.email,
@@ -26,7 +37,7 @@ class AuthService {
         return await userRepository.create(userToSave);
     }
 
-    async login(email, password) {
+    async login(email: string, password: string): Promise<AuthLoginResponse> {
         const user = await userRepository.findByEmail(email);
 
         if (!user) {
@@ -43,7 +54,7 @@ class AuthService {
 
         return {
             user: {
-                id: user._id,
+                id: user._id.toString(),
                 name: user.name,
                 nick: user.nick,
                 role: user.role
@@ -53,4 +64,4 @@ class AuthService {
     }
 }
 
-module.exports = new AuthService();
+export default new AuthService();

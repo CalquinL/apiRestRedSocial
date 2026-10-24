@@ -1,6 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-const errorHandler = require("./middlewares/errorHandler");
+import express from "express";
+import cors from "cors";
+import errorHandler from "./middlewares/errorHandler";
+import UserRoutes from "./routes/user";
+import PublicationRoutes from "./routes/publication";
+import ReservationRoutes from "./routes/reservation";
 
 const app = express();
 
@@ -9,11 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cargar rutas (estarán bajo /api/v1)
-const UserRoutes = require("./routes/user");
-const PublicationRoutes = require("./routes/publication");
-const ReservationRoutes = require("./routes/reservation");
-
+// Cargar rutas (bajo /api/v1)
 app.use("/api/v1/users", UserRoutes);
 app.use("/api/v1/publications", PublicationRoutes);
 app.use("/api/v1/reservations", ReservationRoutes);
@@ -24,4 +23,4 @@ app.use("/api/v1", PublicationRoutes);
 // Middleware de manejo de errores (DEBE ir al final)
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

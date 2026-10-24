@@ -1,7 +1,9 @@
-const AppError = require("../utils/AppError");
+import { Request, Response, NextFunction } from "express";
+import AppError from "../utils/AppError";
+import { Role } from "../types/domain";
 
-exports.roles = (requiredRoles) => {
-    return (req, res, next) => {
+export const roles = (requiredRoles: Role[]) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
         if (!req.user) {
             return next(new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado"));
         }

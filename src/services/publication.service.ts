@@ -1,21 +1,20 @@
-const publicationRepository = require("../repositories/publication.repository");
-const AppError = require("../utils/AppError");
+import publicationRepository from "../repositories/publication.repository";
+import AppError from "../utils/AppError";
+import { IPublication, INeed } from "../models/publication";
+import { PublicationStatus } from "../types/domain";
 
 class PublicationService {
-    async createPublication(userId, data) {
-        // Regla: solo el beneficiario puede crear
-        // (La validación de rol se hace en la ruta con el middleware, pero el service la refuerza)
-
+    async createPublication(userId: string, data: any): Promise<IPublication> {
         const publicationData = {
             ...data,
             user_id: userId,
-            status: "pendiente" // Nace pendiente
+            status: "pendiente" as PublicationStatus
         };
 
         return await publicationRepository.create(publicationData);
     }
 
-    async getPublicationById(id) {
+    async getPublicationById(id: string): Promise<IPublication> {
         const publication = await publicationRepository.findById(id);
         if (!publication) {
             throw new AppError("NOT_FOUND", 404, "La publicación no existe");
@@ -23,34 +22,30 @@ class PublicationService {
         return publication;
     }
 
-    async listApprovedPublications(options) {
+    async listApprovedPublications(options: any): Promise<{ docs: IPublication[], totalDocs: number, totalPages: number, page: number, limit: number }> {
         return await publicationRepository.findApproved(options);
     }
 
-    async listUserPublications(userId, options) {
+    async listUserPublications(userId: string, options: any): Promise<{ docs: IPublication[], totalDocs: number, totalPages: number, page: number, limit: number }> {
         return await publicationRepository.findByUserId(userId, options);
     }
 
-    async updatePublication(id, userId, data) {
+    async updatePublication(id: string, userId: string, data: any): Promise<IPublication | null> {
         const publication = await this.getPublicationById(id);
 
-        // Regla: solo el dueño puede editar
-        if (publication.user_id.toString() !== userId.toString()) {
+        if (publication.user_id.toString() !== userId) {
             throw new AppError("FORBIDDEN", 403, "No tienes permiso para editar esta publicación");
         }
 
         return await publicationRepository.update(id, data);
     }
 
-    async deletePublication(id, userId) {
+    async deletePublication(id: string, userId: string): Promise<IPublication | null> {
         const publication = await this.getPublicationById(id);
 
-        if (publication.user_id.toString() !== userId.toString()) {
+        if (publication.user_id.toString() !== userId) {
             throw new AppError("FORBIDDEN", 403, "No tienes permiso para eliminar esta publicación");
         }
-
-        // Regla: eliminar con reservas activas -> 409
-        // (Este chequeo se implementará plenamente en Fase 4, por ahora lanzamos el esqueleto)
 
         const deleted = await publicationRepository.delete(id, userId);
         if (!deleted) {
@@ -59,10 +54,9 @@ class PublicationService {
         return deleted;
     }
 
-    async moderatePublication(id, status) {
+    async moderatePublication(id: string, status: PublicationStatus): Promise<IPublication | null> {
         const publication = await this.getPublicationById(id);
 
-        // Regla: si ya fue moderada (no es pendiente) -> 409
         if (publication.status !== "pendiente") {
             throw new AppError("INVALID_STATE_TRANSITION", 409, "La publicación ya ha sido moderada");
         }
@@ -70,10 +64,10 @@ class PublicationService {
         return await publicationRepository.updateStatus(id, status);
     }
 
-    async updatePublicationImage(id, userId, filename) {
+    async updatePublicationImage(id: string, userId: string, filename: string): Promise<IPublication | null> {
         const publication = await this.getPublicationById(id);
 
-        if (publication.user_id.toString() !== userId.toString()) {
+        if (publication.user_id.toString() !== userId) {
             throw new AppError("FORBIDDEN", 403, "No tienes permiso para cambiar la imagen");
         }
 
@@ -81,4 +75,4 @@ class PublicationService {
     }
 }
 
-module.exports = new PublicationService();
+export default new PublicationService();

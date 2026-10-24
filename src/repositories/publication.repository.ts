@@ -1,36 +1,37 @@
-const Publication = require("../models/publication");
+import Publication, { IPublication } from "../models/publication";
+import { Meta } from "../utils/response";
 
 class PublicationRepository {
-    async create(publicationData) {
+    async create(publicationData: Partial<IPublication>): Promise<IPublication> {
         const publication = new Publication(publicationData);
         return await publication.save();
     }
 
-    async findById(id) {
+    async findById(id: string): Promise<IPublication | null> {
         return await Publication.findById(id);
     }
 
-    async findByUserId(userId, options) {
+    async findByUserId(userId: string, options: any): Promise<{ docs: IPublication[], totalDocs: number, totalPages: number, page: number, limit: number }> {
         return await Publication.paginate({ user_id: userId }, options);
     }
 
-    async findApproved(options) {
+    async findApproved(options: any): Promise<{ docs: IPublication[], totalDocs: number, totalPages: number, page: number, limit: number }> {
         return await Publication.paginate({ status: "aprobada" }, options);
     }
 
-    async update(id, updateData) {
+    async update(id: string, updateData: Partial<IPublication>): Promise<IPublication | null> {
         return await Publication.findByIdAndUpdate(id, updateData, { new: true });
     }
 
-    async delete(id, userId) {
+    async delete(id: string, userId: string): Promise<IPublication | null> {
         return await Publication.findOneAndDelete({ _id: id, user_id: userId });
     }
 
-    async updateStatus(id, status) {
+    async updateStatus(id: string, status: string): Promise<IPublication | null> {
         return await Publication.findByIdAndUpdate(id, { status }, { new: true });
     }
 
-    async updateImage(id, userId, filename) {
+    async updateImage(id: string, userId: string, filename: string): Promise<IPublication | null> {
         return await Publication.findOneAndUpdate(
             { _id: id, user_id: userId },
             { file: filename },
@@ -38,12 +39,7 @@ class PublicationRepository {
         );
     }
 
-    /**
-     * Reserva atómica de una necesidad
-     * Marca la necesidad como 'reservado' solo si la publicación está 'aprobada'
-     * y la necesidad específica está 'disponible'.
-     */
-    async atomicReserveItem(publicationId, itemId) {
+    async atomicReserveItem(publicationId: string, itemId: string): Promise<IPublication | null> {
         return await Publication.findOneAndUpdate(
             {
                 _id: publicationId,
@@ -57,10 +53,7 @@ class PublicationRepository {
         );
     }
 
-    /**
-     * Actualiza el estado de una necesidad (para cancelaciones o entregas)
-     */
-    async updateItemStatus(publicationId, itemId, status) {
+    async updateItemStatus(publicationId: string, itemId: string, status: string): Promise<IPublication | null> {
         return await Publication.findOneAndUpdate(
             { _id: publicationId, "necesidades._id": itemId },
             { $set: { "necesidades.$.status": status } },
@@ -69,4 +62,4 @@ class PublicationRepository {
     }
 }
 
-module.exports = new PublicationRepository();
+export default new PublicationRepository();

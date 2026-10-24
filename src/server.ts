@@ -1,5 +1,5 @@
-const app = require("./app");
-const { connection } = require("./database/connection");
+import app from "./app";
+import { connection } from "./database/connection";
 
 const PORT = process.env.PORT || 3900;
 
@@ -10,7 +10,7 @@ connection().then(() => {
     app.listen(PORT, () => {
         console.log(`Servidor de Robin corriendo en el puerto: ${PORT}`);
     });
-}).catch(err => {
+}).catch((err: Error) => {
     console.error("Error conectando a la base de datos:", err);
     process.exit(1);
 });

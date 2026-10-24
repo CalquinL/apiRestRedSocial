@@ -1,9 +1,25 @@
-const { Schema, model } = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate-v2");
+import { Schema, model, Document } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import { PublicationStatus, NeedStatus } from "../types/domain";
 
-const PublicationSchema = Schema({
+export interface INeed {
+    _id?: any;
+    name: string;
+    status: NeedStatus;
+}
+
+export interface IPublication extends Document {
+    user_id: Schema.Types.ObjectId;
+    text: string;
+    file?: string;
+    status: PublicationStatus;
+    created_at: Date;
+    necesidades: INeed[];
+}
+
+const PublicationSchema = new Schema<IPublication>({
     user_id: {
-        type: Schema.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
@@ -40,4 +56,4 @@ const PublicationSchema = Schema({
 
 PublicationSchema.plugin(mongoosePaginate);
 
-module.exports = model("Publication", PublicationSchema, "publications");
+export default model<IPublication>("Publication", PublicationSchema, "publications");

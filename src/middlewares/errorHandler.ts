@@ -1,12 +1,13 @@
-const AppError = require("../utils/AppError");
+import { Request, Response, NextFunction } from "express";
+import AppError from "../utils/AppError";
 
-const errorHandler = (err, req, res, next) => {
-    let error = { ...err };
+const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+    let error: any = { ...err };
     error.message = err.message;
 
     // Traducción de errores de Mongoose
     if (err.name === "ValidationError") {
-        const details = Object.values(err.errors).map(e => ({
+        const details = Object.values(err.errors || {}).map((e: any) => ({
             field: e.path,
             message: e.message
         }));
@@ -45,4 +46,4 @@ const errorHandler = (err, req, res, next) => {
     return res.status(statusCode).json(response);
 };
 
-module.exports = errorHandler;
+export default errorHandler;
