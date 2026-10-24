@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const PublicationController = require("../controllers/publication");
-const check = require("../middlewares/auth");
 const multer = require("multer");
+const PublicationController = require("../controllers/publication");
+const { auth } = require("../middlewares/auth");
+const { roles } = require("../middlewares/roles");
 
-// Configuración de subida
+// Configuración de Multer para Imágenes de Publicaciones
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "./uploads/publications/")
@@ -14,17 +15,29 @@ const storage = multer.diskStorage({
     }
 });
 
-const uploads = multer({storage});
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+        if (!allowedTypes.includes(file.mimetype)) {
+            // El error será capturado por el errorHandler
+            return cb(new Error("UNSUPPORTED_MEDIA_TYPE"), false);
+        }
+        cb(null, true);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
 
-// Definición de rutas
-router.get("/prueba-publication", PublicationController.pruebaPublication);
-router.post("/save", check.auth, PublicationController.save);
-router.get("/detail/:id", check.auth, PublicationController.detail);
-router.delete("/remove/:id", check.auth, PublicationController.remove);
-router.get("/user/:id{/:page}", check.auth, PublicationController.user);
-router.post("/upload/:id", [check.auth, uploads.single("file0")], PublicationController.upload);
-router.get("/media/:file", PublicationController.media);
-router.get("/feed{/:page}", check.auth, PublicationController.feed);
+// Rutas de Publicaciones
+router.post("/", auth, roles(["beneficiario"]), PublicationController.create);
+router.get("/", auth, PublicationController.listApproved);
+router.get("/:id", auth, PublicationController.getById);
+router.patch("/:id", auth, PublicationController.update);
+router.delete("/:id", auth, PublicationController.remove);
+router.patch("/:id/status", auth, roles(["admin"]), PublicationController.moderate);
+router.put("/:id/image", auth, upload.single("file"), PublicationController.uploadImage);
 
-// Exportar router
-module.exports = router
+// Rutas de Usuario relacionadas con publicaciones
+router.get("/users/:id/publications", auth, PublicationController.listByUser);
+
+module.exports = router;

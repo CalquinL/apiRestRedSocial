@@ -16,6 +16,11 @@ const PublicationRoutes = require("./routes/publication");
 app.use("/api/v1/users", UserRoutes);
 app.use("/api/v1/publications", PublicationRoutes);
 
+// Soporte para la ruta anidada /users/{id}/publications
+// Como el router de publication ya define /users/:id/publications,
+// lo montamos así para que coincida con la tabla de la API.
+app.use("/api/v1", PublicationRoutes);
+
 // Middleware de manejo de errores (DEBE ir al final)
 app.use(errorHandler);
 
