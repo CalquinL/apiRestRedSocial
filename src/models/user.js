@@ -1,19 +1,25 @@
-const {Schema, model} = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate-v2"); 
+const { Schema, model } = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const UserSchema = Schema({
     name: {
         type: String,
         required: true
     },
-    surname: String,
-    nick: {
+    surname: {
         type: String,
         required: true
     },
+    nick: {
+        type: String,
+        required: true,
+        unique: true
+    },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
+        lowercase: true
     },
     password: {
         type: String,
@@ -21,11 +27,18 @@ const UserSchema = Schema({
     },
     role: {
         type: String,
-        default: "role_user"
+        enum: ["beneficiario", "donante", "admin"],
+        required: true
     },
     image: {
         type: String,
         default: "default.png"
+    },
+    address: String,
+    phone: String,
+    verified: {
+        type: Boolean,
+        default: false
     },
     created_at: {
         type: Date,
@@ -33,6 +46,6 @@ const UserSchema = Schema({
     }
 });
 
-UserSchema.plugin(mongoosePaginate); 
+UserSchema.plugin(mongoosePaginate);
 
 module.exports = model("User", UserSchema, "users");

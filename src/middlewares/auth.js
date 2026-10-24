@@ -1,51 +1,35 @@
-// Modulos
 const jwt = require("jwt-simple");
 const moment = require("moment");
+const { secret } = require("../services/jwt");
+const AppError = require("../utils/AppError");
 
-// Importar clave secreta
-const libjwt = require("../services/jwt");
-const secret = libjwt.secret;
-
-// Middleware de autenticación
 exports.auth = (req, res, next) => {
-    // Comprobar si llega la cabecera de auth
-    if (!req.headers.authorization) {
-        return res.status(403).send({
-            status: "error",
-            message: "La petición no tiene la cabecera de autenticación"
-        });
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return next(new AppError("UNAUTHENTICATED", 401, "Falta el token de autenticación"));
     }
 
-    // Limpiar el token
-    let token = req.headers.authorization.replace(/['"]+/g, '');
+    // Extraer token del formato "Bearer <token>"
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : authHeader;
 
-    // Decodificar el token
     try {
-        let payload = jwt.decode(token, secret);
+        const payload = jwt.decode(token, secret);
 
-        // Comprobar expiración del Token
         if (payload.exp <= moment().unix()) {
-            return res.status(401).send({
-                status: "error",
-                message: "Token expirado"
-            });
-
+            return next(new AppError("TOKEN_EXPIRED", 401, "El token ha expirado"));
         }
 
-        // Agregar datos de usuario a request
-        req.user = payload;
+        // Payload mínimo: { id, role, iat, exp }
+        req.user = {
+            id: payload.id,
+            role: payload.role
+        };
 
+        next();
     } catch (error) {
-        return res.status(404).send({
-            status: "error",
-            message: "Token invalido",
-            error
-        })
+        return next(new AppError("UNAUTHENTICATED", 401, "Token inválido"));
     }
-
-
-    // Pasar a ejecucion de accion
-    next();
-
-}
-
+};

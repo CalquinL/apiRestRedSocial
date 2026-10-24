@@ -1,26 +1,18 @@
-// Importar dependencias
 require("dotenv").config();
 const jwt = require("jwt-simple");
 const moment = require("moment");
 
-// Clave secreta
 const secret = process.env.JWT_SECRET;
+const expires_in = process.env.JWT_EXPIRES_IN || "24h";
 
-// Crear función para generar tokens
 const createToken = (user) => {
     const payload = {
         id: user._id,
-        name: user.name,
-        surname: user.surname,
-        nick: user.nick,
-        email: user.email,
         role: user.role,
-        image: user.image,
         iat: moment().unix(),
-        exp: moment().add(30, "days").unix()
+        exp: moment().add(expires_in).unix()
     };
 
-    // Devolver JWT token codificado
     return jwt.encode(payload, secret);
 }
 
