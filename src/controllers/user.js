@@ -5,7 +5,6 @@ const jwt = require("../services/jwt");
 const mongoosePagination = require("mongoose-paginate-v2");
 const fs = require("fs");
 const path = require("path");
-const followService = require("../services/followService");
 const validate = require("../helpers/validate");
 
 // Acciones de prueba
@@ -162,7 +161,8 @@ const profile = async (req, res) => {
         }
 
         // Informacion de seguimiento
-        const followInfo = await followService.followThisUser(req.user.id, id);
+        // TODO: Eliminar lógica de follow ya que el service no existe
+        const followInfo = null;
 
         // Devolver el usuario
         return res.status(200).send({
@@ -207,7 +207,8 @@ const list = async (req, res) => {
         }
  
         // Obtener info de seguimiento del usuario autenticado
-        let followInfo = await followService.followUserIds(req.user.id);
+        // TODO: Eliminar lógica de follow ya que el service no existe
+        let followInfo = { user_following: [], user_follow_me: [] };
  
         return res.status(200).send({
             status: "success",

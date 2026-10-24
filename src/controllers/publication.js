@@ -5,9 +5,6 @@ const Publication = require("../models/publication");
 const fs = require("fs");
 const path = require("path");
 
-// Servicios
-const followService = require("../services/followService");
-
 // Acciones de prueba
 const pruebaPublication = (req, res) => {
     return res.status(200).send({
@@ -255,7 +252,8 @@ const feed = async (req, res) => {
         const itemsPerPage = 5;
 
         // Sacar un array de identificadores de usuarios que yo sigo como usuario logueado
-        const myFollows = await followService.followUserIds(req.user.id);
+        // TODO: Eliminar lógica de follow ya que el service no existe
+        const myFollows = { user_following: [] };
 
         if (!myFollows.user_following || myFollows.user_following.length <= 0) {
             return res.status(404).send({
