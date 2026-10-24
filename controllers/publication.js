@@ -1,5 +1,4 @@
 // Modelos
-const publication = require("../models/publication");
 const Publication = require("../models/publication");
 
 // Modulos
