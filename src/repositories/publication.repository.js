@@ -37,6 +37,36 @@ class PublicationRepository {
             { new: true }
         );
     }
+
+    /**
+     * Reserva atómica de una necesidad
+     * Marca la necesidad como 'reservado' solo si la publicación está 'aprobada'
+     * y la necesidad específica está 'disponible'.
+     */
+    async atomicReserveItem(publicationId, itemId) {
+        return await Publication.findOneAndUpdate(
+            {
+                _id: publicationId,
+                status: "aprobada",
+                necesidades: { $elemMatch: { _id: itemId, status: "disponible" } }
+            },
+            {
+                $set: { "necesidades.$.status": "reservado" }
+            },
+            { new: true }
+        );
+    }
+
+    /**
+     * Actualiza el estado de una necesidad (para cancelaciones o entregas)
+     */
+    async updateItemStatus(publicationId, itemId, status) {
+        return await Publication.findOneAndUpdate(
+            { _id: publicationId, "necesidades._id": itemId },
+            { $set: { "necesidades.$.status": status } },
+            { new: true }
+        );
+    }
 }
 
 module.exports = new PublicationRepository();

@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "Robin API Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection",
+    "item": [
+      {
+        "name": "1. Registro Beneficiario",
+        "request": {
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"name\": \"Beneficiario Demo\",\n    \"surname\": \"Prueba\",\n    \"nick\": \"beneficiario1\",\n    \"email\": \"beneficiario@demo.com\",\n    \"password\": \"123456\",\n    \"role\": \"beneficiario\"\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/users/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "register"] }
+        }
+      },
+      {
+        "name": "2. Login Beneficiario",
+        "request": {
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"email\": \"beneficiario@demo.com\",\n    \"password\": \"123456\"\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/users/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "users", "login"] }
+        }
+      },
+      {
+        "name": "3. Crear Publicación",
+        "request": {
+          "method": "POST",
+          "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"text\": \"Necesito ayuda con útiles escolares\",\n    \"necesidades\": [\n        { \"name\": \"Cuadernos\" },\n        { \"name\": \"Lápices\" }\n    ]\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/publications", "host": ["{{baseUrl}}"], "path": ["api", "v1", "publications"] }
+        }
+      },
+      {
+        "name": "4. Aprobar Publicación (Admin)",
+        "request": {
+          "method": "PATCH",
+          "header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"status\": \"aprobada\"\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/publications/{{pubId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "v1", "publications", "{{pubId}}", "status"] }
+        }
+      },
+      {
+        "name": "5. Reservar Ítem (Donante)",
+        "request": {
+          "method": "POST",
+          "header": [ { "key": "Authorization", "value": "Bearer {{donorToken}}" } ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"publication_id\": \"{{pubId}}\",\n    \"item_id\": \"{{itemId}}\"\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/reservations", "host": ["{{baseUrl}}"], "path": ["api", "v1", "reservations"] }
+        }
+      },
+      {
+        "name": "6. Confirmar Entrega",
+        "request": {
+          "method": "PATCH",
+          "header": [ { "key": "Authorization", "value": "Bearer {{donorToken}}" } ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"status\": \"entregado\"\n}",
+            "options": { "raw": { "language": "json" } }
+          },
+          "url": { "raw": "{{baseUrl}}/api/v1/reservations/{{resId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "v1", "reservations", "{{resId}}", "status"] }
+        }
+      }
+    ]
+  }
+}
