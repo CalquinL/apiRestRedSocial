@@ -1,5 +1,6 @@
 # Dependencias
 node_modules/
+CLAUDE.md
 
 # Variables de entorno
 .env
