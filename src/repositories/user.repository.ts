@@ -18,9 +18,15 @@ class UserRepository {
         });
     }
 
-    async create(userData: Partial<IUser>): Promise<IUser> {
+    async create(userData: Partial<IUser>): Promise<any> {
         const user = new User(userData);
-        return await user.save();
+        const savedUser = await user.save();
+
+        // Convertimos a objeto plano y eliminamos el password antes de devolverlo
+        const userObj = savedUser.toObject();
+        delete userObj.password;
+
+        return userObj;
     }
 }
 
