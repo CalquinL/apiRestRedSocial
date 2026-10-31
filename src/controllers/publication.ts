@@ -6,7 +6,10 @@ import AppError from "../utils/AppError";
 class PublicationController {
     async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const publication = await publicationService.createPublication(req.user!.id, req.body);
+            const userId = req.user?.id;
+            if (!userId) throw new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado");
+
+            const publication = await publicationService.createPublication(userId, req.body);
             sendSuccess(res, publication, 201);
         } catch (error) {
             next(error);
@@ -15,7 +18,8 @@ class PublicationController {
 
     async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const publication = await publicationService.getPublicationById(req.params.id);
+            const id = String(req.params.id);
+            const publication = await publicationService.getPublicationById(id);
             sendSuccess(res, publication, 200);
         } catch (error) {
             next(error);
@@ -24,8 +28,8 @@ class PublicationController {
 
     async listApproved(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+            const page = parseInt(String(req.query.page)) || 1;
+            const limit = Math.min(parseInt(String(req.query.limit)) || 10, 50);
 
             const options = {
                 page,
@@ -48,9 +52,9 @@ class PublicationController {
 
     async listByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = req.params.id;
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+            const userId = String(req.params.id);
+            const page = parseInt(String(req.query.page)) || 1;
+            const limit = Math.min(parseInt(String(req.query.limit)) || 10, 50);
 
             const options = {
                 page,
@@ -73,7 +77,11 @@ class PublicationController {
 
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const updated = await publicationService.updatePublication(req.params.id, req.user!.id, req.body);
+            const userId = req.user?.id;
+            if (!userId) throw new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado");
+
+            const id = String(req.params.id);
+            const updated = await publicationService.updatePublication(id, userId, req.body);
             sendSuccess(res, updated, 200);
         } catch (error) {
             next(error);
@@ -82,7 +90,11 @@ class PublicationController {
 
     async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            await publicationService.deletePublication(req.params.id, req.user!.id);
+            const userId = req.user?.id;
+            if (!userId) throw new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado");
+
+            const id = String(req.params.id);
+            await publicationService.deletePublication(id, userId);
             res.status(204).send();
         } catch (error) {
             next(error);
@@ -92,7 +104,8 @@ class PublicationController {
     async moderate(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { status } = req.body;
-            const moderated = await publicationService.moderatePublication(req.params.id, status);
+            const id = String(req.params.id);
+            const moderated = await publicationService.moderatePublication(id, status);
             sendSuccess(res, moderated, 200);
         } catch (error) {
             next(error);
@@ -101,10 +114,15 @@ class PublicationController {
 
     async uploadImage(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            if (!req.file) {
+            if (!(req as any).file) {
                 throw new AppError("BAD_REQUEST", 400, "No se ha subido ninguna imagen");
             }
-            const updated = await publicationService.updatePublicationImage(req.params.id, req.user!.id, req.file.filename);
+            const userId = req.user?.id;
+            if (!userId) throw new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado");
+
+            const id = String(req.params.id);
+            const fileName = (req as any).file.filename;
+            const updated = await publicationService.updatePublicationImage(id, userId, fileName);
             sendSuccess(res, updated, 200);
         } catch (error) {
             next(error);
