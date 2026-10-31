@@ -29,6 +29,7 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
 
         next();
     } catch (error) {
-        return next(new AppError("UNAUTHENTICATED", 401, "Token inválido"));
+        console.error("JWT Decode Error:", error);
+        return next(new AppError("UNAUTHENTICATED", 401, `Token inválido: ${error instanceof Error ? error.message : "Error desconocido"}`));
     }
 };
