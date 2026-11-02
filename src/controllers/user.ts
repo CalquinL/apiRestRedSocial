@@ -3,6 +3,8 @@ import authService from "../services/auth.service";
 import userService from "../services/user.service";
 import { sendSuccess } from "../utils/response";
 import AppError from "../utils/AppError";
+import path from "path";
+import fs from "fs";
 
 class UserController {
     async register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -93,9 +95,18 @@ class UserController {
         }
     }
 
-    async avatar(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    async avatar(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            sendSuccess(res, { message: "Avatar en construcción" });
+            const fileName = req.params.file;
+            const filePath = path.join(process.cwd(), "uploads", "users", fileName);
+
+            console.log("Buscando archivo de avatar en:", filePath);
+
+            if (!fs.existsSync(filePath)) {
+                throw new AppError("NOT_FOUND", 404, `La imagen solicitada no existe en la ruta: ${filePath}`);
+            }
+
+            res.sendFile(filePath);
         } catch (error) {
             next(error);
         }

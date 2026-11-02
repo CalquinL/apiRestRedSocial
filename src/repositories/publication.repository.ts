@@ -8,7 +8,7 @@ class PublicationRepository {
     }
 
     async findById(id: string): Promise<IPublication | null> {
-        return await Publication.findById(id);
+        return await Publication.findById(id).select("-__v");
     }
 
     async findByUserId(userId: string, options: any): Promise<{ docs: IPublication[], totalDocs: number, totalPages: number, page: number, limit: number }> {
@@ -20,7 +20,7 @@ class PublicationRepository {
     }
 
     async update(id: string, updateData: Partial<IPublication>): Promise<IPublication | null> {
-        return await Publication.findByIdAndUpdate(id, updateData, { new: true });
+        return await Publication.findByIdAndUpdate(id, updateData, { new: true }).select("-__v");
     }
 
     async delete(id: string, userId: string): Promise<IPublication | null> {
@@ -28,7 +28,7 @@ class PublicationRepository {
     }
 
     async updateStatus(id: string, status: string): Promise<IPublication | null> {
-        return await Publication.findByIdAndUpdate(id, { status }, { new: true });
+        return await Publication.findByIdAndUpdate(id, { status }, { new: true }).select("-__v");
     }
 
     async updateImage(id: string, userId: string, filename: string): Promise<IPublication | null> {
@@ -36,7 +36,7 @@ class PublicationRepository {
             { _id: id, user_id: userId },
             { file: filename },
             { new: true }
-        );
+        ).select("-__v");
     }
 
     async atomicReserveItem(publicationId: string, itemId: string): Promise<IPublication | null> {
@@ -50,7 +50,7 @@ class PublicationRepository {
                 $set: { "necesidades.$.status": "reservado" }
             },
             { new: true }
-        );
+        ).select("-__v");
     }
 
     async updateItemStatus(publicationId: string, itemId: string, status: string): Promise<IPublication | null> {
@@ -58,7 +58,7 @@ class PublicationRepository {
             { _id: publicationId, "necesidades._id": itemId },
             { $set: { "necesidades.$.status": status } },
             { new: true }
-        );
+        ).select("-__v");
     }
 }
 
