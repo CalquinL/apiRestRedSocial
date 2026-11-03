@@ -1,30 +1,35 @@
-# API REST - Red Social
+# Robin · Back end (Hito 2)
 
-API REST desarrollada con Node.js, Express y MongoDB para gestionar usuarios, publicaciones y relaciones de seguimiento (follow) de una red social.
+API REST desarrollada con Node.js, Express y MongoDB para gestionar una plataforma de wishlist solidaria, permitiendo a beneficiarios publicar necesidades y a donantes reservarlas.
 
 ## 🚀 Tecnologías
 
 - **Node.js** y **Express** — servidor y enrutamiento
 - **MongoDB** con **Mongoose** — base de datos
-- **JWT (jwt-simple)** — autenticación mediante tokens
-- **Moment.js** — manejo de fechas
+- **JWT** — autenticación mediante tokens
+- **TypeScript** — lenguaje de programación (migración gradual)
 
 ## 📁 Estructura del proyecto
-├── controllers/ # Lógica de negocio
-├── database/ # Conexión a MongoDB
-├── helpers/ # Funciones de validación
-├── middlewares/ # Autenticación (JWT)
-├── models/ # Esquemas de Mongoose
-├── routes/ # Endpoints de la API
-├── services/ # Servicios (JWT, follow)
-└── uploads/ # Archivos subidos por usuarios
+
+```
+src/
+├── config/       # Configuración de entorno y base de datos
+├── controllers/  # Manejadores de peticiones HTTP
+├── middlewares/  # Filtros de auth, roles y errores
+├── models/       # Definiciones de esquemas Mongoose
+├── repositories/ # Operaciones atómicas de base de datos
+├── routes/      # Definición de endpoints (/api/v1)
+├── services/     # Reglas de negocio y lógica de dominio
+├── utils/        # Respuestas estandarizadas y AppError
+└── validators/   # Esquemas de validación de datos
+```
 
 ## ⚙️ Instalación
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/CalquinL/apiRestRedSocial.git
-cd apiRestRedSocial
+git clone <url-del-repositorio>
+cd ApiRest_Node
 ```
 
 2. Instala las dependencias:
@@ -32,54 +37,52 @@ cd apiRestRedSocial
 npm install
 ```
 
-3. Crea un archivo `.env` en la raíz con las siguientes variables:
+3. Configura las variables de entorno creando un archivo `.env` basado en `.env.example`:
+```env
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/robin
 JWT_SECRET=tu_clave_secreta
-MONGO_URI=mongodb://localhost:27017/red_social
+JWT_EXPIRES_IN=24h
+CORS_ORIGIN=*
+UPLOAD_DIR=uploads/
+```
 
 4. Inicia el servidor:
 ```bash
-npm start
+npm run dev
 ```
 
-## 📌 Endpoints principales
+## 📌 Endpoints principales (v1)
 
-### Usuarios (`/api/user`)
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| GET | `/prueba-user` | ✅ | Ruta de prueba |
-| POST | `/register` | ❌ | Registro de usuario |
-| POST | `/login` | ❌ | Inicio de sesión |
-| GET | `/profile/:id` | ✅ | Ver perfil de un usuario |
-| GET | `/list` | ✅ | Listar usuarios |
-| GET | `/list/:page` | ✅ | Listar usuarios (paginado) |
-| PUT | `/update` | ✅ | Actualizar datos del usuario |
-| POST | `/upload` | ✅ | Subir avatar |
-| GET | `/avatar/:file` | ❌ | Obtener imagen de avatar |
+Todas las rutas parten de `/api/v1`.
 
-### Publicaciones (`/api/publication`)
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| GET | `/prueba-publication` | ❌ | Ruta de prueba |
-| POST | `/save` | ✅ | Crear publicación |
-| GET | `/detail/:id` | ✅ | Ver detalle de una publicación |
-| DELETE | `/remove/:id` | ✅ | Eliminar publicación |
-| GET | `/user/:id/:page` | ✅ | Publicaciones de un usuario (paginado) |
-| POST | `/upload/:id` | ✅ | Subir imagen a una publicación |
-| GET | `/media/:file` | ❌ | Obtener imagen de una publicación |
-| GET | `/feed/:page` | ✅ | Feed de publicaciones (paginado) |
+### Auth (`/auth`)
+- `POST /register`: Registro de usuario.
+- `POST /login`: Inicio de sesión.
 
-### Follow (`/api/follow`)
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| GET | `/prueba-follow` | ❌ | Ruta de prueba |
-| POST | `/save` | ✅ | Seguir a un usuario |
-| DELETE | `/unfollow/:id` | ✅ | Dejar de seguir |
-| GET | `/following/:id` | ✅ | Usuarios que sigo |
-| GET | `/followers/:id` | ✅ | Usuarios que me siguen |
+### Users (`/users`)
+- `GET /me`: Ver perfil propio.
+- `PATCH /me`: Actualizar perfil propio.
+- `GET /users/{id}`: Ver perfil de otro usuario.
+
+### Publications (`/publications`)
+- `POST /publications`: Crear publicación (beneficiario).
+- `GET /publications`: Listar aprobadas (paginado).
+- `GET /publications/{id}`: Detalle de publicación.
+- `PATCH /publications/{id}`: Editar publicación.
+- `DELETE /publications/{id}`: Eliminar publicación.
+- `PATCH /publications/{id}/status`: Moderar estado (admin).
+- `PUT /publications/{id}/image`: Subir imagen.
+
+### Reservations (`/reservations`)
+- `POST /reservations`: Reservar un ítem (donante).
+- `GET /reservations`: Mis reservaciones (paginado).
+- `GET /reservations/{id}`: Detalle de reservación.
+- `PATCH /reservations/{id}/status`: Cancelar o confirmar entrega.
 
 ## 🔐 Autenticación
 La API utiliza JWT. Debes incluir el token en el header de las peticiones protegidas:
-
+`Authorization: Bearer <token>`
 
 ## 👤 Autor
 Lucas Calquín — Estudiante de Ing. Civil en Computación e Informática, Universidad Mayor

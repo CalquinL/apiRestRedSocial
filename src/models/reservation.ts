@@ -1,5 +1,6 @@
 import { Schema, model, Document } from "mongoose";
-import { ReservationStatus } from "../types/domain";
+import { ReservationStatus, RESERVATION_STATUS } from "../types/domain";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IReservation extends Document {
     publication_id: Schema.Types.ObjectId;
@@ -27,7 +28,7 @@ const ReservationSchema = new Schema<IReservation>({
     },
     status: {
         type: String,
-        enum: ["reservado", "entregado", "cancelada"],
+        enum: RESERVATION_STATUS,
         default: "reservado",
         required: true
     },
@@ -39,5 +40,7 @@ const ReservationSchema = new Schema<IReservation>({
         type: Date
     }
 });
+
+ReservationSchema.plugin(mongoosePaginate);
 
 export default model<IReservation>("Reservation", ReservationSchema, "reservations");

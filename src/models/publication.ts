@@ -1,6 +1,6 @@
 import { Schema, model, Document } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { PublicationStatus, NeedStatus } from "../types/domain";
+import { PublicationStatus, NeedStatus, PUBLICATION_STATUS, NEED_STATUS } from "../types/domain";
 
 export interface INeed {
     _id?: any;
@@ -30,7 +30,7 @@ const PublicationSchema = new Schema<IPublication>({
     file: String,
     status: {
         type: String,
-        enum: ["pendiente", "aprobada", "rechazada"],
+        enum: PUBLICATION_STATUS,
         default: "pendiente",
         required: true
     },
@@ -46,7 +46,7 @@ const PublicationSchema = new Schema<IPublication>({
             },
             status: {
                 type: String,
-                enum: ["disponible", "reservado", "entregado"],
+                enum: NEED_STATUS,
                 default: "disponible",
                 required: true
             }

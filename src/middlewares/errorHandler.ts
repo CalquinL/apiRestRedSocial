@@ -22,8 +22,8 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
         error = new AppError("BAD_REQUEST", 400, "Formato de identificador inválido");
     }
 
-    // Si el error no es un AppError, lo convertimos en uno genérico 500
-    if (!(err instanceof AppError) && !error.code) {
+    // Si el error no es un AppError y no ha sido transformado en uno, lo convertimos en uno genérico 500
+    if (!(err instanceof AppError) && !error.statusCode) {
         error = new AppError("INTERNAL_ERROR", 500, "Falla inesperada del servidor");
     }
 

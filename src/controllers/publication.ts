@@ -9,8 +9,28 @@ class PublicationController {
             const userId = req.user?.id;
             if (!userId) throw new AppError("UNAUTHENTICATED", 401, "Usuario no autenticado");
 
+            const { text, necesidades } = req.body;
+            if (!text || !necesidades || !Array.isArray(necesidades) || necesidades.length === 0) {
+                throw new AppError("VALIDATION_ERROR", 400, "El texto y al menos una necesidad son obligatorios");
+            }
+
             const publication = await publicationService.createPublication(userId, req.body);
-            sendSuccess(res, publication, 201);
+
+            const filteredPublication = {
+                _id: publication._id,
+                user_id: publication.user_id,
+                text: publication.text,
+                file: publication.file,
+                status: publication.status,
+                created_at: publication.created_at,
+                necesidades: publication.necesidades.map((n: any) => ({
+                    _id: n._id,
+                    name: n.name,
+                    status: n.status
+                }))
+            };
+
+            sendSuccess(res, filteredPublication, 201);
         } catch (error) {
             next(error);
         }
@@ -20,7 +40,22 @@ class PublicationController {
         try {
             const id = String(req.params.id);
             const publication = await publicationService.getPublicationById(id);
-            sendSuccess(res, publication, 200);
+
+            const filteredPublication = {
+                _id: publication._id,
+                user_id: publication.user_id,
+                text: publication.text,
+                file: publication.file,
+                status: publication.status,
+                created_at: publication.created_at,
+                necesidades: publication.necesidades.map((n: any) => ({
+                    _id: n._id,
+                    name: n.name,
+                    status: n.status
+                }))
+            };
+
+            sendSuccess(res, filteredPublication, 200);
         } catch (error) {
             next(error);
         }
@@ -82,7 +117,26 @@ class PublicationController {
 
             const id = String(req.params.id);
             const updated = await publicationService.updatePublication(id, userId, req.body);
-            sendSuccess(res, updated, 200);
+
+            if (!updated) {
+                throw new AppError("NOT_FOUND", 404, "La publicación no existe o no tienes permiso para editarla");
+            }
+
+            const filteredPublication = {
+                _id: updated._id,
+                user_id: updated.user_id,
+                text: updated.text,
+                file: updated.file,
+                status: updated.status,
+                created_at: updated.created_at,
+                necesidades: updated.necesidades.map((n: any) => ({
+                    _id: n._id,
+                    name: n.name,
+                    status: n.status
+                }))
+            };
+
+            sendSuccess(res, filteredPublication, 200);
         } catch (error) {
             next(error);
         }
@@ -104,9 +158,30 @@ class PublicationController {
     async moderate(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { status } = req.body;
+            if (!status) throw new AppError("VALIDATION_ERROR", 400, "El estado es obligatorio para moderar");
+
             const id = String(req.params.id);
             const moderated = await publicationService.moderatePublication(id, status);
-            sendSuccess(res, moderated, 200);
+
+            if (!moderated) {
+                throw new AppError("NOT_FOUND", 404, "La publicación no existe o ya ha sido moderada");
+            }
+
+            const filteredPublication = {
+                _id: moderated._id,
+                user_id: moderated.user_id,
+                text: moderated.text,
+                file: moderated.file,
+                status: moderated.status,
+                created_at: moderated.created_at,
+                necesidades: moderated.necesidades.map((n: any) => ({
+                    _id: n._id,
+                    name: n.name,
+                    status: n.status
+                }))
+            };
+
+            sendSuccess(res, filteredPublication, 200);
         } catch (error) {
             next(error);
         }
@@ -123,7 +198,26 @@ class PublicationController {
             const id = String(req.params.id);
             const fileName = (req as any).file.filename;
             const updated = await publicationService.updatePublicationImage(id, userId, fileName);
-            sendSuccess(res, updated, 200);
+
+            if (!updated) {
+                throw new AppError("NOT_FOUND", 404, "La publicación no existe o no tienes permiso para subir una imagen");
+            }
+
+            const filteredPublication = {
+                _id: updated._id,
+                user_id: updated.user_id,
+                text: updated.text,
+                file: updated.file,
+                status: updated.status,
+                created_at: updated.created_at,
+                necesidades: updated.necesidades.map((n: any) => ({
+                    _id: n._id,
+                    name: n.name,
+                    status: n.status
+                }))
+            };
+
+            sendSuccess(res, filteredPublication, 200);
         } catch (error) {
             next(error);
         }

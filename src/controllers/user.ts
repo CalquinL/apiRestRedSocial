@@ -9,8 +9,29 @@ import fs from "fs";
 class UserController {
     async register(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            const { name, surname, nick, email, password, role } = req.body;
+
+            if (!name || !surname || !nick || !email || !password || !role) {
+                throw new AppError("VALIDATION_ERROR", 400, "Todos los campos son obligatorios para el registro");
+            }
+
             const user = await authService.register(req.body);
-            sendSuccess(res, user, 201);
+
+            const filteredUser = {
+                _id: user._id,
+                name: user.name,
+                surname: user.surname,
+                nick: user.nick,
+                email: user.email,
+                role: user.role,
+                image: user.image,
+                address: user.address,
+                phone: user.phone,
+                verified: user.verified,
+                created_at: user.created_at
+            };
+
+            sendSuccess(res, filteredUser, 201);
         } catch (error) {
             next(error);
         }
@@ -27,10 +48,24 @@ class UserController {
 
     async profile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // Usamos el ID del usuario autenticado que el middleware de auth deja en req.user
             const userId = req.user?.id || req.params.id;
             const user = await userService.getUserById(userId);
-            sendSuccess(res, user, 200);
+
+            const filteredUser = {
+                _id: user._id,
+                name: user.name,
+                surname: user.surname,
+                nick: user.nick,
+                email: user.email,
+                role: user.role,
+                image: user.image,
+                address: user.address,
+                phone: user.phone,
+                verified: user.verified,
+                created_at: user.created_at
+            };
+
+            sendSuccess(res, filteredUser, 200);
         } catch (error) {
             next(error);
         }
@@ -64,7 +99,22 @@ class UserController {
         try {
             const userId = req.user?.id || req.params.id;
             const updatedUser = await userService.updateProfile(userId, req.body);
-            sendSuccess(res, updatedUser, 200);
+
+            const filteredUser = {
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                surname: updatedUser.surname,
+                nick: updatedUser.nick,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                image: updatedUser.image,
+                address: updatedUser.address,
+                phone: updatedUser.phone,
+                verified: updatedUser.verified,
+                created_at: updatedUser.created_at
+            };
+
+            sendSuccess(res, filteredUser, 200);
         } catch (error) {
             next(error);
         }
