@@ -185,6 +185,61 @@ src/
     └── validate.ts           # Lógica auxiliar de validación
 ```
 
+### 🔄 Recorrido de una Petición (Ejemplo: Reservar Ítem)
+
+A continuación se describe la travesía de una petición `POST /api/v1/reservations`.
+
+| Capa | Archivo | ¿Qué ocurre? | Si falla... |
+| :--- | :--- | :--- | :--- |
+| **Routes** | `routes/reservation.ts` | Recibe la petición y verifica que el verbo sea `POST`. Delega al middleware de auth y luego al controlador. | **404 Not Found**: Si la ruta no existe. |
+| **Middleware**| `middlewares/auth.ts` | Extrae el token Bearer, lo valida y adjunta el usuario al objeto `req.user`. | **401 Unauthorized**: Token inválido o ausente. |
+| **Controller**| `controllers/reservation.ts` | Extrae `publication_id` e `item_id` del cuerpo. Llama al servicio de reservas. | **400 Bad Request**: Si faltan campos obligatorios (lanza `AppError`). |
+| **Service** | `services/reservation.service.ts`| Valida que la publicación esté aprobada y el ítem disponible. Orquestra la reserva atómica. | **409 Conflict**: Si el ítem ya está reservado o la publicación fue rechazada. |
+| **Repository**| `repositories/reservation.repository.ts`| Ejecuta el `findOneAndUpdate` atómico en MongoDB y crea el documento de reserva. | **500 Internal Error**: Fallo de conexión o error de base de datos. |
+| **Models** | `models/reservation.ts` | Valida que los datos cumplan el esquema (ObjectId, Enums de estado). | **400 Validation Error**: Datos incompatibles con el esquema. |
+| **Response** | `utils/response.ts` | El controlador recibe el resultado y usa `sendSuccess` para envolver la data en el sobre estándar. | — |
+
+#### 💻 Fragmentos Relevantes del Flujo
+
+```typescript
+// 1. ROUTE: Definición del endpoint
+// src/routes/reservation.ts
+router.post("/", auth, ReservationController.create); // Enlace: Ruta -> Auth -> Controller
+
+// 2. CONTROLLER: Traducción HTTP -> Servicio
+// src/controllers/reservation.ts
+async create(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { publication_id, item_id } = req.body;
+        // Llama al servicio pasando el ID del usuario autenticado (req.user)
+        const reservation = await reservationService.createReservation(req.user!.id, publication_id, item_id);
+        sendSuccess(res, reservation, 201); // Respuesta estandarizada
+    } catch (error) {
+        next(error); // Propaga el error al errorHandler
+    }
+}
+
+// 3. SERVICE: Reglas de negocio y validación de estado
+// src/services/reservation.service.ts
+async createReservation(donorId, pubId, itemId) {
+    // Lógica: Verificar que el ítem esté "disponible" antes de intentar reservar
+    // Lanza AppError si no se cumple la regla de negocio
+    if (!isAvailable) throw new AppError("NEED_NOT_AVAILABLE", 409, "El ítem ya está reservado");
+    return await reservationRepository.save(donorId, pubId, itemId);
+}
+
+// 4. REPOSITORY: Operación atómica en MongoDB
+// src/repositories/reservation.repository.ts
+async save(donorId, pubId, itemId) {
+    // Actualización condicionada: Solo marca como 'reservado' si sigue 'disponible'
+    return await Publication.findOneAndUpdate(
+        { _id: pubId, "necesidades": { $elemMatch: { _id: itemId, status: "disponible" } } },
+        { $set: { "necesidades.$.status": "reservado" } }
+    );
+}
+```
+
+
 ### Reglas de Oro de la Arquitectura
 1. **Dependencia Unidireccional**: Las capas solo pueden llamar a la capa inmediatamente inferior.
 2. **Aislamiento de Express**: Los `services` y `repositories` no conocen `req` ni `res`.
