@@ -128,16 +128,61 @@ Todas las respuestas utilizan un "sobre" JSON para consistencia:
 `routes` $\rightarrow$ `middlewares` $\rightarrow$ `controllers` $\rightarrow$ `services` $\rightarrow$ `repositories` $\rightarrow$ `models` $\rightarrow$ `MongoDB`
 
 ### Estructura de Carpetas
-```
+```text
 src/
-├── config/       # Variables de entorno y conexión DB
-├── controllers/   # Manejo de req/res y llamadas a servicios
-├── middlewares/   # Auth, Roles, Validación, ErrorHandler
-├── models/        # Definiciones de Esquemas Mongoose
-├── repositories/  # Consultas atómicas a MongoDB
-├── routes/        # Definición de endpoints y verbos
-├── services/      # Lógica de negocio y reglas de dominio
-└── utils/        # Clases de apoyo (AppError, response)
+├── server.ts                  # 🚀 Arranque (Entry Point)
+├── app.ts                     # ⚙️ Configuración Global (Express, Middlewares Globales)
+│
+├── routes/                    # 🟢 CAPA: ROUTES (Asocia Verbo/Ruta → Controller)
+│   ├── user.ts                # Rutas de usuarios
+│   ├── publication.ts         # Rutas de publicaciones
+│   └── reservation.ts        # Rutas de reservas
+│
+├── middlewares/               # 🌑 CAPA: MIDDLEWARES (Validación de Token, Rol y Payload)
+│   ├── auth.ts                # Verificación de JWT
+│   ├── roles.ts              # Control de acceso por rol
+│   ├── upload.ts              # Manejo de archivos (Multer)
+│   └── errorHandler.ts       # Manejador global de errores
+│
+├── controllers/               # 🟢 CAPA: CONTROLLERS (HTTP → Servicio → Respuesta)
+│   ├── user.ts                # Lógica de entrada/salida de Usuarios
+│   ├── publication.ts         # Lógica de entrada/salida de Publicaciones
+│   └── reservation.ts        # Lógica de entrada/salida de Reservas
+│
+├── services/                  # 🟠 CAPA: SERVICES (Lógica de Negocio y Permisos de Propiedad)
+│   ├── auth.service.ts        # Lógica de autenticación
+│   ├── user.service.ts        # Reglas de negocio de Usuarios
+│   ├── publication.service.ts # Reglas de negocio de Publicaciones
+│   ├── reservation.service.ts  # Reglas de negocio de Reservas
+│   ├── notification.service.ts # Reglas de negocio de Notificaciones
+│   └── jwt.ts                 # Gestión de tokens (Lógica de servicio)
+│
+├── repositories/               # 🌑 CAPA: REPOSITORIES (Consultas Atómicas y Persistencia)
+│   ├── user.repository.ts      # Consultas MongoDB de Usuarios
+│   ├── publication.repository.ts # Consultas MongoDB de Publicaciones
+│   └── reservation.repository.ts # Consultas MongoDB de Reservas
+│
+├── models/                    # 🌑 CAPA: MODELS / MongoDB (Esquemas y Tipos)
+│   ├── user.ts                # Esquema de Usuario
+│   ├── publication.ts         # Esquema de Publicación
+│   ├── reservation.ts          # Esquema de Reserva
+│   └── notification.ts         # Esquema de Notificación
+│
+├── types/                     # 🛠️ TIPADO (Específico de TypeScript)
+│   ├── domain.ts              # Tipos y Enums del dominio (Roles, Estados)
+│   └── express.d.ts           # Extensión de Request para incluir req.user
+│
+├── utils/                     # 🛠️ Soporte: Utilidades transversales
+│   ├── response.ts            # Constructor del sobre de respuesta
+│   └── AppError.ts            # Clase de errores de negocio
+│
+├── validators/                # 🛠️ Soporte: Validaciones de entrada
+│
+├── database/                  # ⚙️ Configuración de Base de Datos
+│   └── connection.ts           # Gestión de conexión a MongoDB
+│
+└── helpers/                   # 🛠️ Soporte: Ayudantes generales
+    └── validate.ts           # Lógica auxiliar de validación
 ```
 
 ### Reglas de Oro de la Arquitectura
